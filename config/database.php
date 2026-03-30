@@ -40,7 +40,7 @@ return [
 //            'prefix'         => '',
 //        ],
 
-
+/*
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
@@ -52,7 +52,7 @@ return [
             'journal_mode' => null,
             'synchronous' => null,
             'transaction_mode' => 'DEFERRED',
-        ],
+        ],*/
 
 
 
