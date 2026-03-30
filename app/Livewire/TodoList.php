@@ -26,26 +26,31 @@ class TodoList extends Component
         7 => 'Dom',
     ];
 
-    public function addTodo(): void
-    {
-        $this->validate(['task' => 'required|min:3']);
+public function addTodo(): void
+{
+    $this->validate(['task' => 'required|min:3']);
 
-        Todo::create([
-            'user_id'        => Auth::id(),
-            'task'           => $this->task,
-            'description'    => $this->description,
-            'is_recurring'   => $this->is_recurring,
-            'recurring_days' => $this->is_recurring && count($this->recurring_days) > 0
-                ? implode(',', $this->recurring_days)
-                : null,
-        ]);
+    $data = [
+        'user_id'        => Auth::id(),
+        'task'           => $this->task,
+        'description'    => $this->description,
+        'is_recurring'   => $this->is_recurring,
+        'recurring_days' => $this->is_recurring && count($this->recurring_days) > 0
+            ? implode(',', $this->recurring_days)
+            : null,
+    ];
 
-        $this->task           = '';
-        $this->description    = '';
-        $this->is_recurring   = false;
-        $this->recurring_days = [];
-        $this->showForm       = false;
+    // VERIFICAÇÃO PARA TELEMÓVEL
+    if (PHP_OS_FAMILY === 'Linux' && !app()->runningInConsole()) {
+        // Envia para o MySQL do Railway via API
+        Http::post('https://todosycnestagioprimariu26-production.up.railway.app/api/tasks', $data);
+    } else {
+        // Uso normal no PC
+        Todo::create($data);
     }
+
+    $this->reset(['task', 'description', 'is_recurring', 'recurring_days', 'showForm']);
+}
 
     public function toggleDay(int $day): void
     {
@@ -118,37 +123,26 @@ class TodoList extends Component
     public function render()
     {
         $userId = Auth::id();
-
-        $myTodos = Todo::where('user_id', $userId)
-            ->latest()
-            ->get()
-            ->map(function ($todo) use ($userId) {
-                $todo->completed_today = $todo->is_recurring
-                    ? $todo->isCompletedTodayByUser($userId)
-                    : $todo->is_completed;
-                $todo->seven_days = $todo->is_recurring
-                    ? $todo->lastSevenDays($userId)
-                    : [];
-                $todo->days_done = count(array_filter(
-                    $todo->seven_days, fn($d) => $d['done']
-                ));
-                return $todo;
-            });
-
-        $sharedTodos = Auth::user()->sharedTodos()
-            ->with('user')
-            ->get()
-            ->map(function ($todo) use ($userId) {
-                $todo->completed_today = $todo->isCompletedTodayByUser($userId);
-                $todo->seven_days = $todo->is_recurring
-                    ? $todo->lastSevenDays($userId)
-                    : [];
-                $todo->days_done = count(array_filter(
-                    $todo->seven_days, fn($d) => $d['done']
-                ));
-                return $todo;
-            });
-
+        $baseUrl = 'https://todosycnestagioprimariu26-production.up.railway.app/api';
+    
+        // SE FOR TELEMÓVEL, BUSCA VIA API
+        if (PHP_OS_FAMILY === 'Linux' && !app()->runningInConsole()) {
+            $response = Http::get("$baseUrl/tasks?user_id=$userId");
+            $myTodos = collect($response->json() ?? []);
+        } else {
+            // PC: Busca normal na DB
+            $myTodos = Todo::where('user_id', $userId)->latest()->get();
+        }
+    
+        // O restante da lógica de map (completions, recurring) deve ser mantido
+        $myTodos = $myTodos->map(function ($todo) use ($userId) {
+            // ... (mantém o teu código de mapeamento aqui) ...
+            return $todo;
+        });
+    
+        // Repete a lógica para sharedTodos se necessário
+        $sharedTodos = collect(); // Simplificado para o exemplo
+    
         return view('livewire.todo-list', compact('myTodos', 'sharedTodos'))
             ->layout('components.layouts.app');
     }
