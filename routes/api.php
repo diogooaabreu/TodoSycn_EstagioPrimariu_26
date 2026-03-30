@@ -1,3 +1,5 @@
+<?php
+
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -9,3 +11,5 @@ Route::get('/tasks', function (Request $request) {
 Route::post('/tasks', function (Request $request) {
     return Todo::create($request->all());
 });
+
+?>
