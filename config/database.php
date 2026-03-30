@@ -17,7 +17,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -39,20 +39,7 @@ return [
 //            'auth_token'     => env('DB_AUTH_TOKEN', 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NzQ1MzQ1MTAsImlkIjoiMDE5ZDJhN2YtMDAwMS03ZWM0LThjNmMtYzFkYzQ0YTIxNmYxIiwicmlkIjoiZTIwYmQ0M2ItYWNhYy00NGQ2LWE1OTAtNjk2OWUxMWY1MzU0In0.pgmtGagRDMwSVZ-ngGLxPLYz25OsZ1sAFisjqmw9Lo4RRr75_CVXXP3k8dYsopdojeXpUmymQWMzRrSko1c3Cw'),
 //            'prefix'         => '',
 //        ],
-        'turso' => [
-            'driver' => 'turso',
-            'url' => env('DB_URL'),
-            'auth_token' => env('DB_AUTH_TOKEN'),
-            // Esta linha é o segredo: força o uso de HTTP em vez da extensão nativa
-            'driver_mode' => 'http',
-        ],
 
-        'turso' => [
-            'driver'         => 'turso',
-            'url'            => env('DB_URL'),
-            'auth_token'     => env('DB_AUTH_TOKEN'),
-            'driver_mode'    => 'http',
-        ],
 
         'sqlite' => [
             'driver' => 'sqlite',
