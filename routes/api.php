@@ -2,12 +2,10 @@ use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Rota para o telemóvel listar as tarefas do MySQL
-Route::get('/tasks', function () {
-    return Task::all(); 
+Route::get('/tasks', function (Request $request) {
+    return Todo::where('user_id', $request->user_id)->get();
 });
 
-// Rota para o telemóvel criar uma tarefa no MySQL
 Route::post('/tasks', function (Request $request) {
-    return Task::create($request->all());
+    return Todo::create($request->all());
 });
