@@ -119,31 +119,36 @@ public function addTodo(): void
             ->firstOrFail()
             ->delete();
     }
-
-    public function render()
-    {
-        $userId = Auth::id();
-        $baseUrl = 'https://todosycnestagioprimariu26-production.up.railway.app/api';
-    
-        // SE FOR TELEMÓVEL, BUSCA VIA API
-        if (PHP_OS_FAMILY === 'Linux' && !app()->runningInConsole()) {
-            $response = Http::get("$baseUrl/tasks?user_id=$userId");
-            $myTodos = collect($response->json() ?? []);
-        } else {
-            // PC: Busca normal na DB
-            $myTodos = Todo::where('user_id', $userId)->latest()->get();
+        
+        public function render()
+        {
+            $userId = Auth::id();
+            $baseUrl = 'https://todosycnestagioprimariu26-production.up.railway.app/api';
+        
+            // 1. BUSCA DE DADOS (Telemóvel vs PC)
+            if (PHP_OS_FAMILY === 'Linux' && !app()->runningInConsole()) {
+                $response = Http::get("$baseUrl/tasks?user_id=$userId");
+                $rawTodos = collect($response->json() ?? []);
+            } else {
+                $rawTodos = Todo::where('user_id', $userId)->latest()->get();
+            }
+        
+            // 2. PROCESSAMENTO DA LÓGICA (Igual para ambos)
+            $myTodos = $rawTodos->map(function ($todoData) use ($userId) {
+                // Se vier da API, transformamos o array em objeto para o Blade não falhar
+                $todo = is_array($todoData) ? (object) $todoData : $todoData;
+                
+                // Mantém aqui a tua lógica original de mapeamento
+                $todo->completed_today = $todo->is_recurring 
+                    ? Todo::find($todo->id)->isCompletedTodayByUser($userId) 
+                    : ($todo->is_completed ?? false);
+                    
+                return $todo;
+            });
+        
+            return view('livewire.todo-list', [
+                'myTodos' => $myTodos,
+                'sharedTodos' => collect() // Podes adicionar a lógica de partilha depois
+            ])->layout('components.layouts.app');
         }
-    
-        // O restante da lógica de map (completions, recurring) deve ser mantido
-        $myTodos = $myTodos->map(function ($todo) use ($userId) {
-            // ... (mantém o teu código de mapeamento aqui) ...
-            return $todo;
-        });
-    
-        // Repete a lógica para sharedTodos se necessário
-        $sharedTodos = collect(); // Simplificado para o exemplo
-    
-        return view('livewire.todo-list', compact('myTodos', 'sharedTodos'))
-            ->layout('components.layouts.app');
-    }
 }
