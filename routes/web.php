@@ -7,7 +7,7 @@ use App\Livewire\TodoEdit;
 use App\Livewire\TodoList;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TaskController;
 
@@ -37,14 +37,23 @@ Route::get('/tasks', [TaskController::class, 'index']);
 Route::post('/tasks', [TaskController::class, 'store']);
 
 Route::get('/debug-db', function () {
-    return [
-    'default' => config('database.default'),
-    'connection' => env('DB_CONNECTION'),
-    'database' => env('DB_DATABASE'),
-    'host' => env('DB_HOST'),
+    $configPath = config_path('database.php');
+    $cachedConfigPath = app()->getCachedConfigPath();
+    
+    return response()->json([
+    'app_config_cached' => app()->configurationIsCached(),
+    'cached_config_path' => $cachedConfigPath,
+    'cached_config_exists' => File::exists($cachedConfigPath),
+
+    'database_php_exists' => File::exists($configPath),
+    'database_php_sha1' => File::exists($configPath) ? sha1_file($configPath) : null,
+    'database_php_first_500' => File::exists($configPath) ? substr(File::get($configPath), 0, 500) : null,
+    
     'config_default' => config('database.default'),
-    'config_connection' => config('database.connections.mysql.driver'),
-    'sqlite_database' => config('database.connections.sqlite.database'),
-    'env_file_exists' => file_exists(base_path('.env'))
-    ];
+    'env_db_connection' => env('DB_CONNECTION'),
+    'mysql_config' => config('database.connections.mysql'),
+    'sqlite_config' => config('database.connections.sqlite'),
+    
+    'loaded_providers_count' => count(app()->getLoadedProviders()),
+    ]);
     });
