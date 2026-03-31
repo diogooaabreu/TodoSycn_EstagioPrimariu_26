@@ -4,24 +4,13 @@ FROM dunglas/frankenphp:php8.4-bookworm AS vendor
 
 WORKDIR /app
 
-RUN install-php-extensions \
-    pdo_mysql \
-    mbstring \
-    xml \
-    curl \
-    dom
+RUN install-php-extensions pdo_mysql mbstring xml curl dom
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
 
-RUN composer install \
-    --no-dev \
-    --no-interaction \
-    --no-progress \
-    --prefer-dist \
-    --optimize-autoloader \
-    --no-scripts
+RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --optimize-autoloader --no-scripts
 
 COPY . .
 
@@ -47,22 +36,13 @@ FROM dunglas/frankenphp:php8.4-bookworm
 
 WORKDIR /app
 
-RUN install-php-extensions \
-    pdo_mysql \
-    mbstring \
-    xml \
-    curl \
-    dom
+RUN install-php-extensions pdo_mysql mbstring xml curl dom
 
 COPY . /app
 COPY --from=vendor /app/vendor /app/vendor
 COPY --from=frontend /app/public/build /app/public/build
 
-RUN mkdir -p storage/framework/sessions \
-    storage/framework/views \
-    storage/framework/cache \
-    storage/logs \
-    bootstrap/cache \
+RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache \
     && chown -R www-data:www-data /app/storage /app/bootstrap/cache \
     && chmod -R ug+rwX /app/storage /app/bootstrap/cache
 
