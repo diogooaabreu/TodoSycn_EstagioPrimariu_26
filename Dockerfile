@@ -1,8 +1,21 @@
 # syntax=docker/dockerfile:1
 
-FROM composer:2 AS vendor
+FROM dunglas/frankenphp:php8.4-bookworm AS vendor
 
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    git unzip curl \
+    && install-php-extensions \
+        pdo_mysql \
+        mbstring \
+        xml \
+        curl \
+        dom \
+        fileinfo \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
 
@@ -39,9 +52,7 @@ FROM dunglas/frankenphp:php8.4-bookworm
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    curl \
+    git unzip curl \
     && install-php-extensions \
         pdo_mysql \
         mbstring \
