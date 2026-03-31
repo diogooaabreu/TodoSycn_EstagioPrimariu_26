@@ -47,4 +47,6 @@ RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs bootstrap/cac
 
 EXPOSE 8080
 
-CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=8080"]
+ENV SERVER_NAME=:8080
+ENV DOCUMENT_ROOT=/app/public
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
