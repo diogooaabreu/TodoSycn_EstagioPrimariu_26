@@ -46,7 +46,7 @@ RUN mkdir -p storage/framework/sessions storage/framework/views storage/framewor
 
 ENV APP_ENV=production
 ENV SERVER_NAME=:8080
-ENV CADDY_GLOBAL_OPTIONS=auto_https off
+ENV CADDY_GLOBAL_OPTIONS="auto_https off"
 
 EXPOSE 8080
 
