@@ -5,7 +5,9 @@ FROM dunglas/frankenphp:php8.4-bookworm AS vendor
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
-    git unzip curl \
+    git \
+    unzip \
+    curl \
     && install-php-extensions \
         pdo_mysql \
         mbstring \
@@ -52,7 +54,9 @@ FROM dunglas/frankenphp:php8.4-bookworm
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
-    git unzip curl \
+    git \
+    unzip \
+    curl \
     && install-php-extensions \
         pdo_mysql \
         mbstring \
@@ -66,7 +70,8 @@ COPY . /app
 COPY --from=vendor /app/vendor /app/vendor
 COPY --from=frontend /app/public/build /app/public/build
 
-RUN mkdir -p storage/framework/sessions \
+RUN mkdir -p \
+    storage/framework/sessions \
     storage/framework/views \
     storage/framework/cache \
     storage/logs \
