@@ -42,9 +42,7 @@ COPY . /app
 COPY --from=vendor /app/vendor /app/vendor
 COPY --from=frontend /app/public/build /app/public/build
 
-RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache \
-    && chown -R www-data:www-data /app/storage /app/bootstrap/cache \
-    && chmod -R ug+rwX /app/storage /app/bootstrap/cache
+RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache && chown -R www-data:www-data /app/storage /app/bootstrap/cache && chmod -R ug+rwX /app/storage /app/bootstrap/cache
 
 ENV APP_ENV=production
 ENV SERVER_NAME=:8080
