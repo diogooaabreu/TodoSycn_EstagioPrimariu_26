@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Se estiver em ambiente mobile (NativePHP)
         if (app()->runningInConsole() === false && PHP_OS_FAMILY === 'Linux') {
-            config(['database.default' => 'sqlite']);
+            config(['database.default' => 'mysql']);
         }
 
 
