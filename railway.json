@@ -4,7 +4,7 @@
         "builder": "RAILPACK"
     },
     "deploy": {
-        "startCommand": "php artisan config:clear && /start-container.sh",
+        "startCommand": "cat /start-container.sh",
         "runtime": "V2",
         "numReplicas": 1,
         "sleepApplication": false,
