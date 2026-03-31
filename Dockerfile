@@ -1,8 +1,26 @@
 # syntax=docker/dockerfile:1
 
-FROM composer:2 AS vendor
+FROM dunglas/frankenphp:php8.4-bookworm AS vendor
 
 WORKDIR /app
+
+RUN install-php-extensions \
+    pdo_mysql \
+    mbstring \
+    xml \
+    ctype \
+    curl \
+    dom \
+    fileinfo \
+    filter \
+    hash \
+    openssl \
+    pcntl \
+    session \
+    tokenizer
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 COPY composer.json composer.lock ./
 RUN composer install \
     --no-dev \
@@ -20,6 +38,7 @@ RUN composer dump-autoload --optimize --no-dev
 FROM node:20-bookworm-slim AS frontend
 
 WORKDIR /app
+
 COPY package.json package-lock.json ./
 RUN npm ci
 
@@ -32,7 +51,20 @@ FROM dunglas/frankenphp:php8.4-bookworm
 
 WORKDIR /app
 
-RUN install-php-extensions pdo_mysql
+RUN install-php-extensions \
+    pdo_mysql \
+    mbstring \
+    xml \
+    ctype \
+    curl \
+    dom \
+    fileinfo \
+    filter \
+    hash \
+    openssl \
+    pcntl \
+    session \
+    tokenizer
 
 COPY . /app
 COPY --from=vendor /app/vendor /app/vendor
