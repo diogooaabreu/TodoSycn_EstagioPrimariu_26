@@ -36,7 +36,7 @@ FROM dunglas/frankenphp:php8.4-bookworm
 
 WORKDIR /app
 
-RUN install-php-extensions pdo_mysql mbstring xml curl dom
+RUN install-php-extensions pdo_mysql mbstring xml curl dom zip
 
 COPY . /app
 COPY --from=vendor /app/vendor /app/vendor
@@ -46,8 +46,8 @@ RUN mkdir -p storage/framework/sessions storage/framework/views storage/framewor
 
 ENV APP_ENV=production
 ENV SERVER_NAME=:8080
-ENV DOCUMENT_ROOT=/app/public
+ENV CADDY_GLOBAL_OPTIONS=auto_https off
 
 EXPOSE 8080
 
-CMD ["sh", "-lc", "php artisan config:clear && php artisan migrate --force && frankenphp run"]
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
