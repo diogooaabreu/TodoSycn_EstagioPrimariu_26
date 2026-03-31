@@ -1,27 +1,11 @@
 # syntax=docker/dockerfile:1
 
-FROM dunglas/frankenphp:php8.4-bookworm AS vendor
+FROM composer:2 AS vendor
 
 WORKDIR /app
 
-RUN install-php-extensions \
-    pdo_mysql \
-    mbstring \
-    xml \
-    ctype \
-    curl \
-    dom \
-    fileinfo \
-    filter \
-    hash \
-    openssl \
-    pcntl \
-    session \
-    tokenizer
-
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
 COPY composer.json composer.lock ./
+
 RUN composer install \
     --no-dev \
     --no-interaction \
@@ -31,6 +15,7 @@ RUN composer install \
     --no-scripts
 
 COPY . .
+
 RUN composer dump-autoload --optimize --no-dev
 
 
@@ -40,9 +25,11 @@ FROM node:20-bookworm-slim AS frontend
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+
 RUN npm ci
 
 COPY . .
+
 RUN npm run build
 
 
@@ -51,29 +38,32 @@ FROM dunglas/frankenphp:php8.4-bookworm
 
 WORKDIR /app
 
-RUN install-php-extensions \
-    pdo_mysql \
-    mbstring \
-    xml \
-    ctype \
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
     curl \
-    dom \
-    fileinfo \
-    filter \
-    hash \
-    openssl \
-    pcntl \
-    session \
-    tokenizer
+    && install-php-extensions \
+        pdo_mysql \
+        mbstring \
+        xml \
+        curl \
+        dom \
+        fileinfo \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY . /app
 COPY --from=vendor /app/vendor /app/vendor
 COPY --from=frontend /app/public/build /app/public/build
 
-RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs bootstrap/cache \
+RUN mkdir -p storage/framework/sessions \
+    storage/framework/views \
+    storage/framework/cache \
+    storage/logs \
+    bootstrap/cache \
     && chown -R www-data:www-data /app/storage /app/bootstrap/cache \
     && chmod -R ug+rwX /app/storage /app/bootstrap/cache
 
+ENV APP_ENV=production
 ENV SERVER_NAME=:8080
 ENV DOCUMENT_ROOT=/app/public
 
