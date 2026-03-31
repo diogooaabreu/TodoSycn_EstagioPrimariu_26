@@ -45,5 +45,6 @@ Route::get('/debug-db', function () {
     'config_default' => config('database.default'),
     'config_connection' => config('database.connections.mysql.driver'),
     'sqlite_database' => config('database.connections.sqlite.database'),
+    'env_file_exists' => file_exists(base_path('.env'))
     ];
     });
