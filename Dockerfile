@@ -4,7 +4,7 @@ FROM dunglas/frankenphp:php8.4-bookworm AS vendor
 
 WORKDIR /app
 
-RUN install-php-extensions pdo_mysql mbstring xml curl dom
+RUN apt-get update && apt-get install -y git unzip && install-php-extensions pdo_mysql mbstring xml curl dom zip && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
