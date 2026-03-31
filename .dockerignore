@@ -8,6 +8,8 @@ storage/framework/sessions/*
 storage/framework/views/*
 .env
 .env.*
+!.env.example
 Dockerfile*
 railpack.json
 railpack-plan.json
+nixpacks.toml

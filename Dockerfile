@@ -50,4 +50,5 @@ ENV CADDY_GLOBAL_OPTIONS="auto_https off"
 
 EXPOSE 8080
 
-CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+#CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+CMD ["sh", "-lc", "php artisan config:clear && frankenphp run"]

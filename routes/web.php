@@ -35,3 +35,15 @@ Route::post('/logout', function () {
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/tasks', [TaskController::class, 'index']);
 Route::post('/tasks', [TaskController::class, 'store']);
+
+Route::get('/debug-db', function () {
+    return [
+    'default' => config('database.default'),
+    'connection' => env('DB_CONNECTION'),
+    'database' => env('DB_DATABASE'),
+    'host' => env('DB_HOST'),
+    'config_default' => config('database.default'),
+    'config_connection' => config('database.connections.mysql.driver'),
+    'sqlite_database' => config('database.connections.sqlite.database'),
+    ];
+    });
