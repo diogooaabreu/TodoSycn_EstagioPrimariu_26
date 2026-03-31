@@ -1,16 +1,14 @@
 {
-    "phases": {
-        "setup": {
-            "nixPkgs": ["nodejs_20", "php84", "composer"]
-        },
+    "$schema": "https://schema.railpack.com",
+    "steps": {
         "install": {
-            "cmds": [
+            "commands": [
                 "composer install --no-interaction --no-dev --optimize-autoloader",
                 "npm ci"
             ]
         },
         "build": {
-            "cmds": [
+            "commands": [
                 "npm run build",
                 "php artisan config:cache",
                 "php artisan route:cache",
@@ -18,7 +16,7 @@
             ]
         }
     },
-    "start": {
-        "cmd": "php artisan config:clear && php artisan migrate --force && /start-container.sh"
+    "deploy": {
+        "startCommand": "php artisan config:clear && php artisan migrate --force && /start-container.sh"
     }
 }
