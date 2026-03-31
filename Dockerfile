@@ -49,4 +49,4 @@ EXPOSE 8080
 
 ENV SERVER_NAME=:8080
 ENV DOCUMENT_ROOT=/app/public
-CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+CMD ["sh", "-lc", "php artisan config:clear && php artisan migrate --force && frankenphp run"]
