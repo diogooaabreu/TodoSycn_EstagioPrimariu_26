@@ -1,0 +1,11 @@
+[phases.build]
+cmds = [
+  "composer install --optimize-autoloader --no-scripts --no-interaction",
+  "npm ci",
+  "npm run build",
+  "mkdir -p storage/framework/{sessions,views,cache,testing} storage/logs bootstrap/cache",
+  "chmod -R a+rw storage"
+]
+
+[start]
+cmd = "php artisan config:clear && php artisan migrate --force && /start-container.sh"
