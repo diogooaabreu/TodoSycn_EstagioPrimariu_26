@@ -4,18 +4,12 @@ FROM dunglas/frankenphp:php8.4-bookworm AS vendor
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
+RUN install-php-extensions \
+    pdo_mysql \
+    mbstring \
+    xml \
     curl \
-    && install-php-extensions \
-        pdo_mysql \
-        mbstring \
-        xml \
-        curl \
-        dom \
-        fileinfo \
-    && rm -rf /var/lib/apt/lists/*
+    dom
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -53,25 +47,18 @@ FROM dunglas/frankenphp:php8.4-bookworm
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
+RUN install-php-extensions \
+    pdo_mysql \
+    mbstring \
+    xml \
     curl \
-    && install-php-extensions \
-        pdo_mysql \
-        mbstring \
-        xml \
-        curl \
-        dom \
-        fileinfo \
-    && rm -rf /var/lib/apt/lists/*
+    dom
 
 COPY . /app
 COPY --from=vendor /app/vendor /app/vendor
 COPY --from=frontend /app/public/build /app/public/build
 
-RUN mkdir -p \
-    storage/framework/sessions \
+RUN mkdir -p storage/framework/sessions \
     storage/framework/views \
     storage/framework/cache \
     storage/logs \
