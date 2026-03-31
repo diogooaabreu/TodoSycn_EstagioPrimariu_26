@@ -36,11 +36,13 @@ FROM dunglas/frankenphp:php8.4-bookworm
 
 WORKDIR /app
 
-RUN install-php-extensions pdo_mysql mbstring xml curl dom zip
+RUN apt-get update && apt-get install -y git unzip && install-php-extensions pdo_mysql mbstring xml curl dom zip && rm -rf /var/lib/apt/lists/*
 
 COPY . /app
 COPY --from=vendor /app/vendor /app/vendor
 COPY --from=frontend /app/public/build /app/public/build
+
+RUN rm -f bootstrap/cache/config.php bootstrap/cache/routes-*.php bootstrap/cache/events.php bootstrap/cache/packages.php bootstrap/cache/services.php
 
 RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache && chown -R www-data:www-data /app/storage /app/bootstrap/cache && chmod -R ug+rwX /app/storage /app/bootstrap/cache
 
@@ -50,6 +52,4 @@ ENV CADDY_GLOBAL_OPTIONS="auto_https off"
 
 EXPOSE 8080
 
-#CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
-CMD ["sh", "-lc", "php artisan config:clear && php artisan route:clear && php artisan view:clear && exec frankenphp run"]
-#CMD ["sh", "-lc", "php artisan config:clear && frankenphp run"]
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

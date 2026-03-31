@@ -13,3 +13,4 @@ Dockerfile*
 railpack.json
 railpack-plan.json
 nixpacks.toml
+bootstrap/cache/*.php
