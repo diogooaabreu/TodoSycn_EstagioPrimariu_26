@@ -27,31 +27,22 @@ class TodoList extends Component
         7 => 'Dom',
     ];
 
-public function addTodo(): void
-{
-    $this->validate(['task' => 'required|min:3']);
-
-    $data = [
-        'user_id'        => Auth::id(),
-        'task'           => $this->task,
-        'description'    => $this->description,
-        'is_recurring'   => $this->is_recurring,
-        'recurring_days' => $this->is_recurring && count($this->recurring_days) > 0
-            ? implode(',', $this->recurring_days)
-            : null,
-    ];
-
-    // VERIFICAÇÃO PARA TELEMÓVEL
-    if (PHP_OS_FAMILY === 'Linux' && !app()->runningInConsole()) {
-        // Envia para o MySQL do Railway via API
-        Http::post('https://todosycnestagioprimariu26-production.up.railway.app/api/tasks', $data);
-    } else {
-        // Uso normal no PC
-        Todo::create($data);
+    public function addTodo(): void
+    {
+        $this->validate(['task' => 'required|min:3']);
+    
+        Todo::create([
+            'user_id'        => Auth::id(),
+            'task'           => $this->task,
+            'description'    => $this->description,
+            'is_recurring'   => $this->is_recurring,
+            'recurring_days' => $this->is_recurring && count($this->recurring_days) > 0
+                ? implode(',', $this->recurring_days)
+                : null,
+        ]);
+    
+        $this->reset(['task', 'description', 'is_recurring', 'recurring_days', 'showForm']);
     }
-
-    $this->reset(['task', 'description', 'is_recurring', 'recurring_days', 'showForm']);
-}
 
     public function toggleDay(int $day): void
     {
@@ -121,35 +112,25 @@ public function addTodo(): void
             ->delete();
     }
         
-        public function render()
-        {
-            $userId = Auth::id();
-            $baseUrl = 'https://todosycnestagioprimariu26-production.up.railway.app/api';
-        
-            // 1. BUSCA DE DADOS (Telemóvel vs PC)
-            if (PHP_OS_FAMILY === 'Linux' && !app()->runningInConsole()) {
-                $response = Http::get("$baseUrl/tasks?user_id=$userId");
-                $rawTodos = collect($response->json() ?? []);
-            } else {
-                $rawTodos = Todo::where('user_id', $userId)->latest()->get();
-            }
-        
-            // 2. PROCESSAMENTO DA LÓGICA (Igual para ambos)
-            $myTodos = $rawTodos->map(function ($todoData) use ($userId) {
-                // Se vier da API, transformamos o array em objeto para o Blade não falhar
-                $todo = is_array($todoData) ? (object) $todoData : $todoData;
-                
-                // Mantém aqui a tua lógica original de mapeamento
-                $todo->completed_today = $todo->is_recurring 
-                    ? Todo::find($todo->id)->isCompletedTodayByUser($userId) 
-                    : ($todo->is_completed ?? false);
-                    
+    public function render()
+    {
+        $userId = Auth::id();
+    
+        $myTodos = Todo::where('user_id', $userId)
+            ->latest()
+            ->get()
+            ->map(function ($todo) use ($userId) {
+                $todo->completed_today = $todo->is_recurring
+                    ? $todo->isCompletedTodayByUser($userId)
+                    : $todo->is_completed;
                 return $todo;
             });
-        
-            return view('livewire.todo-list', [
-                'myTodos' => $myTodos,
-                'sharedTodos' => collect() // Podes adicionar a lógica de partilha depois
-            ])->layout('components.layouts.app');
-        }
+    
+        $sharedTodos = collect();
+    
+        return view('livewire.todo-list', [
+            'myTodos'     => $myTodos,
+            'sharedTodos' => $sharedTodos,
+        ])->layout('components.layouts.app');
+    }
 }
