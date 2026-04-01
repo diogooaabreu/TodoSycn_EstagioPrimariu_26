@@ -123,6 +123,12 @@ class TodoList extends Component
                 $todo->completed_today = $todo->is_recurring
                     ? $todo->isCompletedTodayByUser($userId)
                     : $todo->is_completed;
+                $todo->seven_days = $todo->is_recurring
+                    ? $todo->lastSevenDays($userId)
+                    : [];
+                $todo->days_done = $todo->is_recurring
+                    ? collect($todo->seven_days)->where('done', true)->count()
+                    : 0;
                 return $todo;
             });
     
