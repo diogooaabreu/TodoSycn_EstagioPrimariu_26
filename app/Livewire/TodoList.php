@@ -132,7 +132,22 @@ class TodoList extends Component
                 return $todo;
             });
     
-        $sharedTodos = collect();
+        $sharedTodos = Todo::whereHas('shares', function ($q) use ($userId) {
+                $q->where('shared_with_user_id', $userId);
+            })
+            ->with('user')
+            ->latest()
+            ->get()
+            ->map(function ($todo) use ($userId) {
+                $todo->completed_today = $todo->isCompletedTodayByUser($userId);
+                $todo->seven_days = $todo->is_recurring
+                    ? $todo->lastSevenDays($userId)
+                    : [];
+                $todo->days_done = $todo->is_recurring
+                    ? collect($todo->seven_days)->where('done', true)->count()
+                    : 0;
+                return $todo;
+            });
     
         return view('livewire.todo-list', [
             'myTodos'     => $myTodos,
