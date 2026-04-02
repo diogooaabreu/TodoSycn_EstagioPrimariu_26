@@ -25,7 +25,7 @@ class User extends Authenticatable
 {
     // HasFactory     → permite criar utilizadores falsos em testes
     // Notifiable     → permite enviar notificações (email, push, etc.)
-    use HasApiTokens,HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
     /**
      * Campos que podem ser preenchidos em massa (Mass Assignment Protection).

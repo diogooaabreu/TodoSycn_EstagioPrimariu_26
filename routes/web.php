@@ -32,35 +32,36 @@ use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TaskController;
 
-// ---- Autenticação (sem token — são para obter o token) ----
-Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login',    [AuthController::class, 'login']);
-});
+// ---- Rotas protegidas (só para utilizadores autenticados) ----
+// Lista principal das todos
+Route::get('/', TodoList::class)->middleware('auth');
 
-// ---- Rotas protegidas (requerem token válido no cabeçalho) ----
-// O middleware 'auth:sanctum' verifica o token Authorization: Bearer TOKEN
-Route::middleware('auth:sanctum')->group(function () {
+// Detalhe de uma tarefa específica
+// {id} → parâmetro dinâmico recebido no mount(int $id)
+Route::get('/todo/{id}', TodoDetail::class)->middleware('auth');
 
-    // Perfil
-    Route::get('/auth/me',      [AuthController::class, 'me']);
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
+// Edição do toodo
+Route::get('/todo/{id}/edit', TodoEdit::class)->middleware('auth');
 
-    // Tarefas — CRUD completo
-    Route::get('/tasks',         [TaskController::class, 'index']);   // listar
-    Route::post('/tasks',        [TaskController::class, 'store']);   // criar
-    Route::get('/tasks/{id}',    [TaskController::class, 'show']);    // detalhe
-    Route::patch('/tasks/{id}',  [TaskController::class, 'update']); // actualizar
-    Route::delete('/tasks/{id}', [TaskController::class, 'destroy']); // eliminar
+// ---- Rotas de autenticação (só para não-autenticados) ----
+// Auth
+Route::get('/login', LoginForm::class)->name('login')->middleware('guest');
+Route::get('/register', RegisterForm::class)->middleware('guest');
 
-    // Conclusões
-    Route::post('/tasks/{id}/complete',   [TaskController::class, 'complete']);   // marcar feito
-    Route::delete('/tasks/{id}/complete', [TaskController::class, 'uncomplete']); // desmarcar
+// ---- Logout ----
+// POST por segurança — um link GET poderia ser accionado acidentalmente
+// (ex: por um bot que segue links)
+Route::post('/logout', function () {
+    Auth::logout();            // remove utilizador da sessão
+    session()->invalidate();   // destroi a sessão completamente
+    session()->regenerateToken(); // novo token CSRF (previne ataques após logout)
+    return redirect('/login');
+})->name('logout');
 
-    // Partilhas
-    Route::post('/tasks/{id}/share',           [TaskController::class, 'share']);       // partilhar
-    Route::delete('/tasks/{id}/share/{userId}', [TaskController::class, 'removeShare']); // remover partilha
-});
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/tasks', [TaskController::class, 'index']);
+Route::post('/tasks', [TaskController::class, 'store']);
 
 Route::get('/debug-db', function () {
     $configPath = config_path('database.php');
