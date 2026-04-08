@@ -109,8 +109,6 @@ return [
         'GITHUB_*',
         'DO_SPACES_*',
         '*_SECRET',
-        'DB_PASSWORD',
-        'DB_USERNAME',
     ],
 
     /*

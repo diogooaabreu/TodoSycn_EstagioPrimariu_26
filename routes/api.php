@@ -1,15 +1,22 @@
 <?php
 
-use App\Models\Task;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\TaskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/tasks', function (Request $request) {
-    return Todo::where('user_id', $request->user_id)->get();
-});
+// ---- Públicas (sem token) ----
+Route::post('/login',    [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 
-Route::post('/tasks', function (Request $request) {
-    return Todo::create($request->all());
-});
+// ---- Protegidas (precisam de token Sanctum) ----
+Route::middleware('auth:sanctum')->group(function () {
 
-?>
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    Route::apiResource('todos', TaskController::class);
+});
