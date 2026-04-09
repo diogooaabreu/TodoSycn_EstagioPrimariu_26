@@ -49,22 +49,16 @@ class TodoList extends Component
      */
     public function addTodo(): void
     {
-        // Valida só o campo obrigatório (título)
         $this->validate(['task' => 'required|min:3']);
 
-        Todo::create([
-            'user_id'        => Auth::id(), // associa ao utilizador actual
+        $api = new \App\Services\ApiService();
+        $api->createTodo([
             'task'           => $this->task,
             'description'    => $this->description,
             'is_recurring'   => $this->is_recurring,
-            // Se é repetida E tem dias seleccionados: guarda "1,3,5"
-            // Caso contrário: guarda null
-            'recurring_days' => $this->is_recurring && count($this->recurring_days) > 0
-                ? implode(',', $this->recurring_days)
-                : null,
+            'recurring_days' => $this->recurring_days,
         ]);
 
-        // Limpa todos os campos do formulário após criar
         $this->reset(['task', 'description', 'is_recurring', 'recurring_days', 'showForm']);
     }
 
@@ -97,58 +91,7 @@ class TodoList extends Component
      */
     public function toggleTodo(int $id): void
     {
-        $todo   = Todo::findOrFail($id);
-        $userId = Auth::id();
-
-        // Verifica se o utilizador tem permissão (é o dono ou tem partilha)
-        $isOwner  = $todo->user_id === $userId;
-        $isShared = TodoShare::where('todo_id', $id)
-            ->where('shared_with_user_id', $userId)
-            ->exists();
-
-        // Se não tem permissão, termina sem fazer nada (silencioso por segurança)
-        if (!$isOwner && !$isShared) {
-            return;
-        }
-
-        if ($todo->is_recurring) {
-            // Tarefa repetida → usa a tabela todo_completions para guardar histórico
-            $existing = TodoCompletion::where('todo_id', $id)
-                ->where('user_id', $userId)
-                ->whereDate('completed_at', today())
-                ->first();
-
-            if ($existing) {
-                $existing->delete(); // já estava feita → desmarca
-            } else {
-                TodoCompletion::create([
-                    'todo_id'      => $id,
-                    'user_id'      => $userId,
-                    'completed_at' => today(),
-                ]);
-            }
-        } else {
-            // Tarefa normal do dono → actualiza o campo is_completed
-            if ($isOwner) {
-                $todo->update(['is_completed' => !$todo->is_completed]);
-            } else {
-                // Tarefa normal partilhada → usa completions para não afectar o estado do dono
-                $existing = TodoCompletion::where('todo_id', $id)
-                    ->where('user_id', $userId)
-                    ->whereDate('completed_at', today())
-                    ->first();
-
-                if ($existing) {
-                    $existing->delete();
-                } else {
-                    TodoCompletion::create([
-                        'todo_id'      => $id,
-                        'user_id'      => $userId,
-                        'completed_at' => today(),
-                    ]);
-                }
-            }
-        }
+        (new \App\Services\ApiService())->toggleTodo($id);
     }
 
     /**
@@ -160,10 +103,7 @@ class TodoList extends Component
      */
     public function deleteTodo(int $id): void
     {
-        Todo::where('id', $id)
-            ->where('user_id', Auth::id()) // garantia de segurança
-            ->firstOrFail()
-            ->delete();
+        (new \App\Services\ApiService())->deleteTodo($id);
     }
 
     /**
@@ -172,57 +112,13 @@ class TodoList extends Component
      */
     public function render()
     {
-        $userId = Auth::id();
-
-        // ---- Tarefas próprias ----
-        $myTodos = Todo::where('user_id', $userId)
-            ->latest() // ordenadas por data de criação descendente
-            ->get()
-            ->map(function ($todo) use ($userId) {
-                // Adiciona propriedades calculadas a cada tarefa
-                // (não existem na BD — são calculadas em PHP para a view)
-
-                // Estado de hoje: diferente para tarefas normais vs repetidas
-                $todo->completed_today = $todo->is_recurring
-                    ? $todo->isCompletedTodayByUser($userId)
-                    : $todo->is_completed;
-
-                // Histórico semanal (só para tarefas repetidas)
-                $todo->seven_days = $todo->is_recurring
-                    ? $todo->lastSevenDays($userId)
-                    : [];
-
-                // Contador de dias feitos esta semana
-                $todo->days_done = $todo->is_recurring
-                    ? collect($todo->seven_days)->where('done', true)->count()
-                    : 0;
-
-                return $todo;
-            });
-
-        // ---- Tarefas partilhadas com este utilizador ----
-        // whereHas verifica se existe pelo menos uma partilha para este utilizador
-        // with('user') carrega o dono em eager loading (evita N+1 queries)
-        $sharedTodos = Todo::whereHas('shares', function ($q) use ($userId) {
-            $q->where('shared_with_user_id', $userId);
-        })
-            ->with('user') // carrega o utilizador dono para mostrar "de [nome]"
-            ->latest()
-            ->get()
-            ->map(function ($todo) use ($userId) {
-                $todo->completed_today = $todo->isCompletedTodayByUser($userId);
-                $todo->seven_days = $todo->is_recurring
-                    ? $todo->lastSevenDays($userId)
-                    : [];
-                $todo->days_done = $todo->is_recurring
-                    ? collect($todo->seven_days)->where('done', true)->count()
-                    : 0;
-                return $todo;
-            });
+        $api      = new \App\Services\ApiService();
+        $response = $api->getTodos();
+        $data     = $response->json();
 
         return view('livewire.todo-list', [
-            'myTodos'     => $myTodos,
-            'sharedTodos' => $sharedTodos,
+            'myTodos'     => collect($data['my_todos'] ?? []),
+            'sharedTodos' => collect($data['shared_todos'] ?? []),
         ])->layout('components.layouts.app');
     }
 }

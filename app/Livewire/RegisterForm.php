@@ -49,25 +49,19 @@ class RegisterForm extends Component
      */
     public function register()
     {
-        // Valida antes de criar qualquer coisa na BD
         $this->validate();
 
-        // Cria o utilizador na BD
-        // Hash::make() encripta a password com bcrypt
-        // (mesmo que o cast 'hashed' faça isto automaticamente,
-        // é boa prática ser explícito)
-        $user = User::create([
-            'name'     => $this->name,
-            'email'    => $this->email,
-            'password' => Hash::make($this->password),
-        ]);
+        $api      = new \App\Services\ApiService();
+        $response = $api->register($this->name, $this->email, $this->password);
 
-        // Faz login imediatamente após criar a conta
-        // O utilizador não precisa de ir ao ecrã de login
-        Auth::login($user);
-        session()->regenerate(); // nova sessão por segurança
+        if ($response->successful()) {
+            session(['api_token' => $response->json('token')]);
+            session(['api_user'  => $response->json('user')]);
 
-        return redirect('/');
+            return redirect('/');
+        }
+
+        $this->addError('email', 'Erro ao criar conta.');
     }
 
     public function render()

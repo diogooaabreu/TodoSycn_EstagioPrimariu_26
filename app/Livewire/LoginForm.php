@@ -43,25 +43,17 @@ class LoginForm extends Component
      */
     public function login()
     {
-        // Valida os campos segundo $rules
-        // Se falhar: para a execução e os erros aparecem na view com @error('campo')
         $this->validate();
 
-        // Auth::attempt() faz:
-        // 1. SELECT na tabela users pelo email
-        // 2. Compara a password com bcrypt
-        // 3. Se correcto: cria a sessão e devolve true
-        if (Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
-            // Gera novo ID de sessão — segurança contra Session Fixation
-            // (ataque onde o atacante fixa o ID antes do login)
-            session()->regenerate();
+        $api      = new \App\Services\ApiService();
+        $response = $api->login($this->email, $this->password);
 
-            // Redireciona para a lista de tarefas
+        if ($response->successful()) {
+            session(['api_token' => $response->json('token')]);
+            session(['api_user'  => $response->json('user')]);
             return redirect('/');
         }
 
-        // Credenciais erradas: adiciona erro de validação no campo email
-        // Usamos 'email' em vez de 'password' para não revelar se o email existe
         $this->addError('email', 'Email ou password incorrectos.');
     }
 

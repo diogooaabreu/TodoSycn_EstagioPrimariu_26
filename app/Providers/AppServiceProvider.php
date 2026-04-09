@@ -51,8 +51,18 @@ class AppServiceProvider extends ServiceProvider
         // Por isso, a app no Android dá erro ao tentar ligar ao MySQL.
         // Para resolver definitivamente, seria necessário implementar
         // uma API REST e o Android usar SQLite local com sincronização.
-        if (app()->runningInConsole() === false && PHP_OS_FAMILY === 'Linux') {
-            config(['database.default' => 'mysql']); // força mysql em Linux
+//        if (app()->runningInConsole() === false && PHP_OS_FAMILY === 'Linux') {
+//            config(['database.default' => 'mysql']); // força mysql em Linux
+//        }
+        // CORRETO
+        if (class_exists(\Native\Mobile\Runtime::class)) {
+            \Native\Mobile\Runtime::boot($this->app);
+        }
+
+        // No Android desativa ligação directa à BD
+        if (PHP_OS_FAMILY === 'Linux' && !app()->runningInConsole()) {
+            config(['database.default' => 'sqlite']);
+            config(['database.connections.sqlite.database' => ':memory:']);
         }
     }
 }

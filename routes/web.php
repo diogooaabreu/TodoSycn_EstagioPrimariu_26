@@ -21,8 +21,6 @@
  * ============================================================
  */
 
-
-
 use App\Livewire\LoginForm;
 use App\Livewire\RegisterForm;
 use App\Livewire\TodoDetail;
@@ -30,66 +28,26 @@ use App\Livewire\TodoEdit;
 use App\Livewire\TodoList;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\TaskController;
 
-Route::get('/', TodoList::class)->middleware('auth');
-Route::get('/todo/{id}', TodoDetail::class)->middleware('auth');
-Route::get('/todo/{id}/edit', TodoEdit::class)->middleware('auth');
+// Rotas protegidas — troca 'auth' por 'api.auth'
+Route::middleware('api.auth')->group(function () {
+    Route::get('/', \App\Livewire\TodoList::class);
+    Route::get('/todo/{id}', \App\Livewire\TodoDetail::class);
+    Route::get('/todo/{id}/edit', \App\Livewire\TodoEdit::class);
+});
 
-Route::get('/login', LoginForm::class)->name('login')->middleware('guest');
-Route::get('/register', RegisterForm::class)->middleware('guest');
+// Rotas públicas
+Route::get('/login', \App\Livewire\LoginForm::class);
+Route::get('/register', \App\Livewire\RegisterForm::class);
 
+// Logout
 Route::post('/logout', function () {
-    Auth::logout();
-    session()->invalidate();
-    session()->regenerateToken();
+    session()->forget(['api_token', 'api_user']);
     return redirect('/login');
 })->name('logout');
-// ---- Rotas protegidas (só para utilizadores autenticados) ----
-//// Lista principal das todos
-//Route::get('/', TodoList::class)->middleware('auth');
-//
-//// Detalhe de uma tarefa específica
-//// {id} → parâmetro dinâmico recebido no mount(int $id)
-//Route::get('/todo/{id}', TodoDetail::class)->middleware('auth');
-//
-//// Edição do toodo
-//Route::get('/todo/{id}/edit', TodoEdit::class)->middleware('auth');
-
-// ---- Rotas de autenticação (só para não-autenticados) ----
-// Auth
-//Route::get('/login', LoginForm::class)->name('login')->middleware('guest');
-//Route::get('/register', RegisterForm::class)->middleware('guest');
-
-//Route::post('/login',    [AuthController::class, 'login']);
-//Route::post('/register', [AuthController::class, 'register']);
-
-
-// ---- Logout ----
-// POST por segurança — um link GET poderia ser accionado acidentalmente
-// (ex: por um bot que segue links)
-//Route::post('/logout', function () {
-//    Auth::logout();            // remove utilizador da sessão
-//    session()->invalidate();   // destroi a sessão completamente
-//    session()->regenerateToken(); // novo token CSRF (previne ataques após logout)
-//    return redirect('/login');
-//})->name('logout');
-
-
-//Route::post('/login', [AuthController::class, 'login']);
-//Route::get('/tasks', [TaskController::class, 'index']);
-//Route::post('/tasks', [TaskController::class, 'store']);
-
-//// ---- Protegidas (precisam de token Sanctum) ----
-//Route::middleware('auth:sanctum')->group(function () {
-//
-//    Route::post('/logout', [AuthController::class, 'logout']);
-//
-//    Route::get('/user', function (Request $request) {
-//        return $request->user();
-//    });
-//
-//    Route::apiResource('tasks', TaskController::class);
-//})
 
 //Route::get('/debug-db', function () {
 //    $configPath = config_path('database.php');

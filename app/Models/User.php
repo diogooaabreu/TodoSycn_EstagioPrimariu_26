@@ -20,13 +20,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens; // ← ADICIONA ESTE IMPORT (estava em falta
 
 class User extends Authenticatable
 {
     // HasFactory     → permite criar utilizadores falsos em testes
     // Notifiable     → permite enviar notificações (email, push, etc.)
-    use HasApiTokens,HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
     /**
      * Campos que podem ser preenchidos em massa (Mass Assignment Protection).
