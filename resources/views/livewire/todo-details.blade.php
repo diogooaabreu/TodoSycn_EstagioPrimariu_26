@@ -69,7 +69,7 @@
         </div>
 
         {{-- Secção: Partilhado com (Visual Catita) --}}
-        @if(count($todo['shared_with'] ?? []) > 0)
+        @if(!empty($todo['shared_with']) && count($todo['shared_with']) > 0)
             <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
                 <p class="text-xs text-gray-400 font-semibold uppercase mb-3 tracking-wider">Partilhado com</p>
                 <div class="space-y-3">

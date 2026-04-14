@@ -85,7 +85,7 @@
                 </button>
             </div>
 
-            @if(count($todo['shared_with'] ?? []) > 0)
+            @if(!empty($todo['shared_with']) && count($todo['shared_with']) > 0)
                 <div class="space-y-3">
                     @foreach($todo['shared_with'] as $user)
                         <div class="flex items-center justify-between p-3 rounded-2xl bg-gray-50 border border-gray-100 transition-all">

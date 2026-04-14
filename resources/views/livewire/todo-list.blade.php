@@ -148,17 +148,11 @@
                         <div class="flex flex-col gap-3 flex-shrink-0">
                             <a href="/todo/{{ $todo['id'] }}/edit" wire:navigate
                                class="w-8 h-8 flex items-center justify-center bg-blue-50 rounded-xl text-blue-500">✏️</a>
-                            <!--<button
-                                wire:click="deleteTodo({{ $todo['id'] }})"
-                                wire:confirm="Tens a certeza que queres eliminar?"
-                                wire:loading.class="opacity-40" wire:target="deleteTodo({{ $todo['id'] }})"
-                                class="w-8 h-8 flex items-center justify-center bg-red-50 rounded-xl text-red-400 font-bold">✕
-                            </button>-->
                             <button
                                 wire:click="deleteTodo({{ $todo['id'] }})"
-                                wire:confirm="Tens a certeza?"
-                                {{-- Remove o item visualmente mal o clique aconteça --}}
-                                onclick="confirm('Tens a certeza?') || event.stopImmediatePropagation()"
+                                wire:confirm="Tens a certeza que queres eliminar?"
+                                wire:loading.class="opacity-40"
+                                wire:target="deleteTodo({{ $todo['id'] }})"
                                 class="w-8 h-8 flex items-center justify-center bg-red-50 rounded-xl text-red-400 font-bold">
                                 ✕
                             </button>
@@ -175,7 +169,7 @@
         </div>
 
         {{-- Partilhados comigo --}}
-        @if($sharedTodos->count() > 0)
+        @if((is_array($sharedTodos) ? count($sharedTodos) : $sharedTodos->count()) > 0)
             <p class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-3">Partilhados comigo</p>
             <div class="space-y-3">
                 @foreach($sharedTodos as $todo)

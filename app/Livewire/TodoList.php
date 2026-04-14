@@ -18,10 +18,6 @@
  */
 namespace App\Livewire;
 
-use App\Models\Todo;
-use App\Models\TodoCompletion;
-use App\Models\TodoShare;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Livewire\Component;
 
