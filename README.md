@@ -1,58 +1,151 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# TodoSync — Gestão de Tarefas Multi-dispositivo (Projeto 05)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicação mobile de gestão de tarefas com sincronização em tempo real entre dispositivos, desenvolvida em Laravel + NativePHP Mobile durante o estágio na Primariu (BRATIONAL - Sistemas de Informação Lda.).
 
-## About Laravel
+🎥 **Demonstração em vídeo:** https://www.youtube.com/watch?v=Xm9RZNKU8HM&list=PLaQbpcoT6whT2s8RyUulqr0guhVo0D0n1&index=6
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+> **Nota:** O servidor online (Railway) encontra-se atualmente suspenso por expiração do plano de créditos. A aplicação funcionou em produção completa conforme documentado na demonstração em vídeo.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Sobre o Projeto
 
-## Learning Laravel
+O **TodoSync** é a evolução do projeto Mini To-Do List, resolvendo a sua principal limitação: os dados ficavam apenas no dispositivo local. Esta versão permite que o utilizador aceda sempre às mesmas tarefas em qualquer dispositivo, com sincronização automática via servidor.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+O projeto serviu também como avaliação técnica por parte da empresa antes de avançar para o projeto principal (TourOS Alpha).
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Funcionalidades
 
-## Agentic Development
+### Autenticação
+- Registo com nome, email e password
+- Login / Logout com invalidação completa de sessão
+- Proteção de rotas — utilizadores não autenticados são redirecionados
+- Sessões persistentes de 7 dias
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Gestão de Tarefas
+- Criar tarefa com título e descrição opcional
+- Editar título, descrição e configurações de repetição
+- Eliminar tarefa (com confirmação)
+- Marcar/desmarcar como concluída
+- Lista separada entre tarefas próprias e tarefas partilhadas
 
-```bash
-composer require laravel/boost --dev
+### Tarefas Repetidas
+- Ativação de repetição com seleção dos dias da semana (Segunda a Domingo)
+- Histórico visual dos últimos 7 dias (círculo preenchido = feito, contorno = hoje, cinzento = não feito)
+- Contador semanal (ex: "4/7")
+- Estado independente por utilizador
 
-php artisan boost:install
+### Partilha de Tarefas
+- Partilhar qualquer tarefa com outro utilizador pelo email
+- O utilizador convidado pode ver e marcar como concluída
+- O dono pode remover partilhas
+- Tarefas partilhadas aparecem numa secção separada
+
+### Ecrã de Detalhe
+- Estatísticas: feito esta semana, este mês e total
+- Gráfico dos últimos 7 dias com datas
+- Histórico completo agrupado por mês
+- Lista de utilizadores com acesso
+
+---
+
+## Stack Tecnológica
+
+| Componente | Tecnologia |
+|---|---|
+| Framework | Laravel + NativePHP Mobile |
+| Backend | PHP 8.3 |
+| Frontend | Blade + Livewire + Tailwind CSS |
+| Base de Dados | MySQL (Railway) |
+| Autenticação | Laravel Sanctum (sessões) |
+| Plataforma | Web + Android (APK via NativePHP Mobile) |
+
+---
+
+## Arquitetura
+
+A aplicação segue uma arquitetura de duas camadas:
+
+```
+┌──────────────────────────────────┐
+│  App NativePHP (Android/Browser) │
+│  Laravel + Livewire + Blade      │
+└──────────────┬───────────────────┘
+               │ HTTP (HTTPS)
+               ▼
+┌──────────────────────────────────┐
+│  Base de Dados MySQL             │
+│  Servidor Railway                │
+└──────────────────────────────────┘
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+> A ligação direta ao MySQL funciona em browser. Em Android, o driver `pdo_mysql` não está disponível no PHP embutido pelo NativePHP — ver secção de Limitações.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Instalação e Configuração
 
-## Code of Conduct
+### Pré-requisitos
+- PHP 8.3+
+- Composer
+- Node.js + NPM
+- MySQL (local ou remoto)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Passos
 
-## Security Vulnerabilities
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/diogooaabreu/TodoSycn_EstagioPrimariu_26.git
+cd TodoSycn_EstagioPrimariu_26
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# 2. Instalar dependências PHP
+composer install
 
-## License
+# 3. Instalar dependências frontend
+npm install && npm run build
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# 4. Configurar o ambiente
+cp .env.example .env
+php artisan key:generate
+
+# 5. Configurar a base de dados no .env
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_DATABASE=todosync
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+# 6. Executar as migrações
+php artisan migrate
+
+# 7. Iniciar o servidor
+php artisan serve
+```
+
+Aceder a: `http://localhost:8000`
+
+---
+
+## Limitações Conhecidas
+
+**Driver `pdo_mysql` ausente no Android**
+
+O NativePHP Mobile empacota o PHP dentro do APK Android, mas esse PHP não inclui a extensão `pdo_mysql`. O PHP embutido no Android suporta apenas SQLite.
+
+**Solução aplicada:** A aplicação funciona via browser no telemóvel, acedendo ao servidor remoto. O NativePHP Mobile empacota a interface, mas a ligação à base de dados é feita através do servidor online.
+
+**Solução definitiva (para projetos futuros):** Implementar uma API REST no servidor (ver [Projeto 05 — API REST](https://github.com/diogooaabreu/ESTAGIOP05_API_TodoSycn.git)).
+
+---
+
+## Contexto de Desenvolvimento
+
+Este projeto foi desenvolvido como parte do estágio curricular da Licenciatura em Engenharia de Sistemas Informáticos (LESI) no IPCA, realizado na empresa Primariu. Serviu como avaliação técnica antes do desenvolvimento do TourOS Alpha e como exploração da stack NativePHP Mobile em ambiente de produção real.
+
+---
+
+## Licença
+
+Projeto académico — Estágio Curricular LESI, IPCA 2025/2026.
